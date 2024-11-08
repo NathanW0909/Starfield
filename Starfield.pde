@@ -1,86 +1,77 @@
-import javax.swing.*;
-import java.awt.*;
+import processing.core.PApplet;
 import java.util.Random;
 
-public class StarfieldAnimation extends JPanel {
-    
-    public static void main(String[] args) {
-        JFrame frame = new JFrame("Starfield Animation");
-        StarfieldAnimation animation = new StarfieldAnimation();
-        frame.add(animation);
-        frame.setSize(800, 600);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setVisible(true);
+public class Starfield extends PApplet {
 
-        animation.setup();
-        while (true) {
-            animation.repaint();  // This will call the paintComponent method repeatedly
-            try {
-                Thread.sleep(30);  // Pause for 30 milliseconds for smooth animation
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+    Particle[] particles;
+
+    public static void main(String[] args) {
+        PApplet.main("Starfield");
+    }
+
+    public void settings() {
+        size(800, 800);
+    }
+
+    public void setup() {
+        particles = new Particle[100];
+        for (int i = 0; i < particles.length; i++) {
+            if (i == 0) {
+                particles[i] = new OddballParticle(width / 2, height / 2);
+            } else {
+                particles[i] = new Particle(random(width), random(height), random(TWO_PI), random(1, 3), color(random(255), random(255), random(255)));
             }
         }
     }
 
-    class Particle {
-        double x, y;
-        Color color;
-        double angle;
-        double speed;
+    public void draw() {
+        background(0);
+        for (Particle particle : particles) {
+            particle.move();
+            particle.show();
+        }
+    }
 
-        public Particle(double x, double y, Color color, double angle, double speed) {
+    class Particle {
+        double x, y, speed, angle;
+        int col;
+
+        Particle(double x, double y, double angle, double speed, int col) {
             this.x = x;
             this.y = y;
-            this.color = color;
             this.angle = angle;
             this.speed = speed;
+            this.col = col;
         }
 
-        public void move() {
-            x += Math.cos(Math.toRadians(angle)) * speed;
-            y += Math.sin(Math.toRadians(angle)) * speed;
+        void move() {
+            x += cos((float) angle) * speed;
+            y += sin((float) angle) * speed;
         }
 
-        public void show(Graphics g) {
-            g.setColor(color);
-            g.fillOval((int) x, (int) y, 5, 5);
+        void show() {
+            fill(col);
+            noStroke();
+            ellipse((float) x, (float) y, 5, 5);
         }
     }
 
     class OddballParticle extends Particle {
 
-        public OddballParticle(double x, double y, Color color, double angle, double speed) {
-            super(x, y, color, angle, speed);
+        OddballParticle(double x, double y) {
+            super(x, y, random(TWO_PI), 2, color(255, 0, 0));
         }
 
-        public void move() {
-            angle += 10;
-            super.move();
+        void move() {
+            x += cos((float) angle) * speed * 1.5;
+            y += sin((float) angle) * speed * 1.5;
+            angle += random(-0.1, 0.1); // Make the Oddball move in a more erratic pattern
         }
 
-        public void show(Graphics g) {
-            g.setColor(Color.YELLOW);
-            g.fillRect((int) x, (int) y, 7, 7);  // Oddball is drawn as a square
-        }
-    }
-
-    Particle[] particles = new Particle[100];
-    Random random = new Random();
-
-    public void setup() {
-        particles[0] = new OddballParticle(100, 100, Color.RED, 45, 2.0);
-        for (int i = 1; i < particles.length; i++) {
-            particles[i] = new Particle(random.nextInt(800), random.nextInt(600), Color.WHITE, random.nextInt(360), 1.0);
-        }
-    }
-
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        for (Particle p : particles) {
-            p.move();
-            p.show(g);
+        void show() {
+            fill(col);
+            noStroke();
+            ellipse((float) x, (float) y, 10, 10); // Make the Oddball larger
         }
     }
 }
